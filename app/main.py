@@ -359,6 +359,16 @@ async def auth_callback():
         "status": "ready"
     }
 
+@app.get("/health")
+async def health_check():
+    """Simple health check endpoint that doesn't require authentication."""
+    return {
+        "status": "healthy",
+        "message": "HRMS Backend is running successfully",
+        "environment": ENVIRONMENT,
+        "version": "1.0.0"
+    }
+
 
 
 if __name__ == "__main__":
