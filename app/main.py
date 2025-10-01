@@ -359,31 +359,6 @@ async def auth_callback():
         "status": "ready"
     }
 
-@app.get("/health")
-async def health_check():
-    """Simple health check endpoint that doesn't require authentication."""
-    return {
-        "status": "healthy",
-        "message": "HRMS Backend is running successfully",
-        "environment": ENVIRONMENT,
-        "version": "1.0.0"
-    }
-
-@app.get("/test-vercel-jwt")
-async def test_vercel_jwt(request: Request):
-    """Test endpoint to check Vercel JWT detection."""
-    cookies = dict(request.cookies)
-    vercel_jwt = cookies.get("_vercel_jwt")
-    
-    return {
-        "message": "Vercel JWT Test Endpoint",
-        "cookies_present": bool(cookies),
-        "vercel_jwt_present": bool(vercel_jwt),
-        "vercel_jwt_preview": vercel_jwt[:20] + "..." if vercel_jwt else None,
-        "all_cookies": cookies,
-        "deployment_status": "Changes should be visible if deployed"
-    }
-
 
 
 if __name__ == "__main__":

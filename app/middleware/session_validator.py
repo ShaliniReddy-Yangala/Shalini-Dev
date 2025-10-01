@@ -232,78 +232,13 @@ class PortalSessionValidator:
             logger.info(f"=== SESSION VALIDATION END (DATABASE_ERROR) ===")
             return None
 
-    async def validate_vercel_jwt(self, jwt_token: str) -> Optional[Dict[str, Any]]:
-        """
-        Validates Vercel JWT token for development/testing purposes.
-        Returns a mock user for Vercel deployments.
-        """
-        logger.info(f"=== VERCEL JWT VALIDATION START ===")
-        logger.info(f"JWT Token: {jwt_token[:20]}...")
-        
-        try:
-            # For Vercel deployments, we'll create a mock user
-            # In production, you might want to validate the JWT properly
-            import base64
-            import json
-            
-            # Decode JWT payload (without verification for now)
-            parts = jwt_token.split('.')
-            if len(parts) == 3:
-                payload = parts[1]
-                # Add padding if needed
-                payload += '=' * (4 - len(payload) % 4)
-                decoded_payload = base64.urlsafe_b64decode(payload)
-                token_data = json.loads(decoded_payload.decode('utf-8'))
-                
-                logger.info(f"JWT Payload: {token_data}")
-                
-                # Extract user info from Vercel JWT
-                username = token_data.get('username', 'vercel-user')
-                user_id = token_data.get('userId', 'vercel-user-id')
-                
-                # Create mock user data
-                mock_user_data = {
-                    "valid": True,
-                    "user_id": user_id,
-                    "email": f"{username}@vercel.app",
-                    "name": username.replace('-', ' ').title(),
-                    "phone": None,
-                    "department_id": None,
-                    "user_type": "vercel-user",
-                    "is_system_admin": True,  # Give admin access for testing
-                    "is_department_head": False,
-                    "all_accesses": [],
-                    "session_data": {
-                        "session_id": jwt_token,
-                        "created_at": None,
-                        "expires_at": None
-                    }
-                }
-                
-                logger.info(f"✅ Vercel JWT validation successful for user: {username}")
-                logger.info(f"=== VERCEL JWT VALIDATION END (SUCCESS) ===")
-                return mock_user_data
-            else:
-                logger.warning(f"❌ Invalid JWT format")
-                return None
-                
-        except Exception as e:
-            logger.error(f"💥 Error validating Vercel JWT: {e}")
-            logger.info(f"=== VERCEL JWT VALIDATION END (ERROR) ===")
-            return None
-
     async def __call__(self, request: Request, call_next: Callable):
         """
         FastAPI middleware implementation.
         """
-        # TEMPORARY: Disable authentication for Vercel deployment testing
-        # TODO: Re-enable authentication once Vercel JWT handling is working
-        logger.info(f"🔧 TEMPORARY: Bypassing authentication for Vercel deployment")
-        return await call_next(request)
-        
         # Define public endpoints that don't require authentication
         public_endpoints = [
-            "/", "/docs", "/redoc", "/openapi.json", "/health", "/test-vercel-jwt",
+            "/docs", "/redoc", "/openapi.json", "/health",
             "/public/job-types",
             "/public/jobs/overview", 
             "/public/skills",
@@ -314,10 +249,6 @@ class PortalSessionValidator:
         
         # Check for public endpoints that don't require authentication
         if any(request.url.path.startswith(prefix) for prefix in public_endpoints):
-            return await call_next(request)
-        
-        # Special handling for root endpoint - make it always public
-        if request.url.path == "/":
             return await call_next(request)
         
         # Allow job details and apply endpoints to pass through (they're public)
@@ -331,7 +262,6 @@ class PortalSessionValidator:
         if request.method == "OPTIONS":
             return await call_next(request)
 
-        # Check for session_id in cookies first
         session_id = request.cookies.get("session_id")
         logger.info(f"=== SESSION SEARCH START ===")
         logger.info(f"Request URL: {request.url}")
@@ -339,19 +269,7 @@ class PortalSessionValidator:
         logger.info(f"Request Path: {request.url.path}")
         logger.info(f"Session ID from cookies: {session_id if session_id else 'None'}")
         
-        # If no session_id, check for Vercel JWT token
-        if not session_id:
-            vercel_jwt = request.cookies.get("_vercel_jwt")
-            logger.info(f"Vercel JWT from cookies: {vercel_jwt[:20] + '...' if vercel_jwt else 'None'}")
-            logger.info(f"All cookies: {dict(request.cookies)}")
-            if vercel_jwt:
-                # For Vercel deployments, use the JWT as session_id
-                session_id = vercel_jwt
-                logger.info(f"🔧 Using Vercel JWT as session_id: {session_id[:20]}...")
-            else:
-                logger.warning(f"❌ No Vercel JWT found in cookies")
-        
-        # If still no session_id, check query parameters
+        # If not in cookies, check query parameters
         if not session_id:
             session_id_param = request.query_params.get("session_id")
             logger.info(f"Session ID from query params: {session_id_param if session_id_param else 'None'}")
@@ -377,31 +295,6 @@ class PortalSessionValidator:
         
         # Check if session_id is missing
         if not session_id:
-            # Check for Vercel JWT as a fallback
-            vercel_jwt = request.cookies.get("_vercel_jwt")
-            if vercel_jwt:
-                logger.info(f"🔧 Found Vercel JWT, creating mock user for testing")
-                # Create a simple mock user for Vercel deployments
-                mock_user_data = {
-                    "valid": True,
-                    "user_id": "vercel-user",
-                    "email": "vercel-user@vercel.app",
-                    "name": "Vercel User",
-                    "phone": None,
-                    "department_id": None,
-                    "user_type": "vercel-user",
-                    "is_system_admin": True,
-                    "is_department_head": False,
-                    "all_accesses": [],
-                    "session_data": {
-                        "session_id": vercel_jwt,
-                        "created_at": None,
-                        "expires_at": None
-                    }
-                }
-                request.state.user = mock_user_data
-                return await call_next(request)
-            
             logger.warning(f"=== AUTHENTICATION FAILED - NO SESSION ID ===")
             logger.warning(f"❌ No session_id found in cookies or query parameters")
             logger.warning(f"🔍 Search locations checked:")
@@ -442,13 +335,7 @@ class PortalSessionValidator:
                 )
         
         logger.info(f"Attempting to validate session_id: {session_id[:8]}...")
-        
-        # Check if this is a Vercel JWT token (starts with eyJ)
-        if session_id and session_id.startswith("eyJ"):
-            logger.info(f"🔧 Detected Vercel JWT token, using special validation")
-            user_data = await self.validate_vercel_jwt(session_id)
-        else:
-            user_data = await self.validate_session(session_id)
+        user_data = await self.validate_session(session_id)
 
         if user_data:
             logger.info(f"Session validation successful for user: {user_data.get('user_id', 'unknown')}")
