@@ -9,6 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+from app.config import AWS_ACCESS_KEY_ID1, AWS_SECRET_ACCESS_KEY1, SENDER_EMAIL
 
 
 email_router = APIRouter(prefix="/api/email", tags=["Email"])
@@ -31,13 +32,13 @@ class EmailService:
         # Hardcoded region (ensure it matches your SES configuration)
         self.aws_region = "ap-south-1"  # SES-supported region
         
-        # Environment variables
-        self.sender_email = os.getenv("SENDER_EMAIL", "hr@vaics-consulting.com")  # Verified domain email
+        # Use configuration from config module
+        self.sender_email = SENDER_EMAIL
         self.client = boto3.client(
             'ses',
             region_name=self.aws_region,
-            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID1"),
-            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY1")
+            aws_access_key_id=AWS_ACCESS_KEY_ID1,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY1
         )
 
     def send_email(

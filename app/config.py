@@ -28,8 +28,10 @@ AWS_REGION = config.get_env_var("AWS_REGION", "ap-south-2")
 S3_BUCKET = config.get_env_var("S3_BUCKET", "upload-media00")
 AWS_ACCESS_KEY_ID = config.get_env_var("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config.get_env_var("AWS_SECRET_ACCESS_KEY")
-AWS_ACCESS_KEY_ID1 = config.get_env_var("AWS_ACCESS_KEY_ID1")
-AWS_SECRET_ACCESS_KEY1 = config.get_env_var("AWS_SECRET_ACCESS_KEY1")
+
+# Email Service AWS Configuration (fallback to main AWS credentials if not set)
+AWS_ACCESS_KEY_ID1 = config.get_env_var_optional("AWS_ACCESS_KEY_ID1") or AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY1 = config.get_env_var_optional("AWS_SECRET_ACCESS_KEY1") or AWS_SECRET_ACCESS_KEY
 
 # Database Configuration
 DATABASE_URI = config.get_env_var("DATABASE_URI")
