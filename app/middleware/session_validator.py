@@ -298,7 +298,7 @@ class PortalSessionValidator:
         """
         # Define public endpoints that don't require authentication
         public_endpoints = [
-            "/", "/docs", "/redoc", "/openapi.json", "/health",
+            "/", "/docs", "/redoc", "/openapi.json", "/health", "/test-vercel-jwt",
             "/public/job-types",
             "/public/jobs/overview", 
             "/public/skills",
