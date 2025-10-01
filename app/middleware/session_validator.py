@@ -298,7 +298,7 @@ class PortalSessionValidator:
         """
         # Define public endpoints that don't require authentication
         public_endpoints = [
-            "/docs", "/redoc", "/openapi.json", "/health",
+            "/", "/docs", "/redoc", "/openapi.json", "/health",
             "/public/job-types",
             "/public/jobs/overview", 
             "/public/skills",
@@ -334,10 +334,13 @@ class PortalSessionValidator:
         if not session_id:
             vercel_jwt = request.cookies.get("_vercel_jwt")
             logger.info(f"Vercel JWT from cookies: {vercel_jwt[:20] + '...' if vercel_jwt else 'None'}")
+            logger.info(f"All cookies: {dict(request.cookies)}")
             if vercel_jwt:
                 # For Vercel deployments, use the JWT as session_id
                 session_id = vercel_jwt
                 logger.info(f"🔧 Using Vercel JWT as session_id: {session_id[:20]}...")
+            else:
+                logger.warning(f"❌ No Vercel JWT found in cookies")
         
         # If still no session_id, check query parameters
         if not session_id:
