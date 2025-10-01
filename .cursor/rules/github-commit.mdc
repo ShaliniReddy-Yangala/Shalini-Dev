@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+Every time you are done writing your code give a commit title and summary (separately) in very easy plain english. Make sure it effectively describes the change that has been made keep the commit title under 50 characters at any cost and the description should not be more then 150 characters at any cost. 

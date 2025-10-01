@@ -1,0 +1,38 @@
+---
+description: How to write notes to help the frontend devloper to implment the changes made in backend to frontend.
+globs: 
+alwaysApply: false
+---
+**FRONTEND DEVELOPER DOCUMENTATION INSTRUCTIONS:**
+
+When asked to write notes or documentation for frontend developers regarding backend changes, respond directly in chat with clear, technical specifications. Do NOT create artifacts or write frontend code.
+
+**Response Format:**
+- Use structured markdown with clear headings
+- Lead with breaking changes if any exist
+- Group related changes logically
+- Include specific technical details only
+
+**Required Content:**
+- **API Endpoints**: Method, path, request/response schemas, status codes
+- **Data Models**: Field additions/removals/renames, type changes, validation rules
+- **Authentication**: New headers, token requirements, permission changes  
+- **Error Responses**: New error codes, messages, expected client handling
+- **Configuration**: Environment variables, API keys, base URLs
+- **Deprecations**: Timeline and migration path for deprecated features
+
+**Exclude:**
+- Frontend implementation code
+- Framework-specific instructions
+- UI/UX recommendations
+- Basic HTTP concepts explanations
+- Code examples in React/Vue/Angular
+
+**Tone:**
+- Direct and technical
+- Assume frontend developer expertise
+- Focus on "what changed" not "how to implement"
+- Include version numbers and deployment timelines when relevant
+
+
+Provide only the essential technical specifications needed for frontend integration updates.
